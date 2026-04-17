@@ -1,0 +1,9 @@
+# 育儿知识库服务依赖（按需取消注释并固定版本）
+# fastapi
+# uvicorn[standard]
+# pydantic-settings
+# langgraph
+# pymilvus
+# motor / pymongo
+# httpx
+# python-multipart
