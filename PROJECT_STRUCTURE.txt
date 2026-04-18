@@ -1,0 +1,136 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    Babycare 育儿知识库项目结构                                 ║
+║                  Baby Knowledge Base Project Structure                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+babycare/
+│
+├── 📁 api/                                    # API 路由层
+│   ├── __init__.py
+│   ├── import_router.py                       # 导入接口
+│   └── query_router.py                        # 查询接口
+│
+├── 📁 core/                                   # 核心配置
+│   ├── __init__.py
+│   ├── deps.py                                # 依赖注入
+│   ├── paths.py                               # 路径配置
+│   └── settings.py                            # 全局设置
+│
+├── 📁 docs/                                   # 项目文档
+│   ├── architecture.md                        # 架构文档
+│   ├── dev_log.md                             # 开发日志
+│   └── dev_log0.md                            # 早期日志
+│
+├── 📁 processor/                              # 处理器模块
+│   │
+│   ├── 📁 import_process/                    # 导入流程 ⭐
+│   │   ├── __init__.py
+│   │   ├── main_graph.py                      # LangGraph 主流程图
+│   │   ├── state.py                           # 状态定义
+│   │   ├── test_structure.py                  # 结构验证测试
+│   │   ├── README.md                          # 结构说明文档
+│   │   ├── REFACTOR_SUMMARY.md                # 重构总结
+│   │   │
+│   │   ├── 📁 nodes/                          # 导入节点
+│   │   │   ├── __init__.py
+│   │   │   ├── entry.py                       # 入口节点
+│   │   │   ├── parse_document.py              # 文档解析节点
+│   │   │   ├── split_document.py              # 文本切分节点
+│   │   │   ├── embedding.py                   # 向量生成节点
+│   │   │   └── vector_upsert.py               # 向量存储节点
+│   │   │
+│   │   └── 📁 tem/                            # 测试素材
+│   │       └── 餐桌冲突与挑食沟通话术.md
+│   │
+│   └── 📁 query_process/                      # 查询流程
+│       ├── __init__.py
+│       ├── main_graph.py                      # LangGraph 主流程图
+│       ├── state.py                           # 状态定义
+│       ├── prompt.py                          # 提示词模板
+│       │
+│       ├── 📁 nodes/                          # 查询节点
+│       │   ├── __init__.py
+│       │   ├── entry.py                       # 入口节点
+│       │   ├── intent_route.py                # 意图路由节点
+│       │   ├── metadata_filter.py             # 元数据过滤节点
+│       │   ├── case_search.py                 # 案例搜索节点
+│       │   ├── knowledge_search.py            # 知识搜索节点
+│       │   ├── merge_rerank.py                # 合并重排节点
+│       │   └── answer_output.py               # 答案输出节点
+│       │
+│       └── 📁 tem/                            # 测试素材
+│
+├── 📁 schema/                                 # 数据模型
+│   ├── __init__.py
+│   ├── content_schema.py                      # 内容模型
+│   ├── query_schema.py                        # 查询模型
+│   ├── task_schema.py                         # 任务模型
+│   └── upload_schema.py                       # 上传模型
+│
+├── 📁 services/                               # 业务服务层
+│   ├── __init__.py
+│   ├── file_import_service.py                 # 文件导入服务
+│   ├── query_service.py                       # 查询服务
+│   └── task_service.py                        # 任务服务
+│
+├── 📁 utils/                                  # 工具函数
+│   ├── __init__.py
+│   ├── embedding_utils.py                     # Embedding 工具
+│   ├── llm_utils.py                           # LLM 工具
+│   ├── reranker_utils.py                      # 重排序工具
+│   ├── vector_store.py                        # 向量存储工具
+│   ├── storage_utils.py                       # 存储工具
+│   ├── sse_utils.py                           # SSE 工具
+│   ├── task_utils.py                          # 任务工具
+│   ├── history_utils.py                       # 历史记录工具
+│   └── exceptions.py                          # 异常定义
+│
+├── 📄 requirements.txt                        # 项目依赖
+├── 📄 .env.example                            # 环境变量示例
+└── 📄 .gitignore                              # Git 忽略配置
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                              架构说明                                         ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  🔄 导入流程 (Import Process)                                                ║
+║     ┌──────────────────────────────────────────────────────────────┐        ║
+║     │  parse_document → split_document → embedding → vector_upsert │        ║
+║     └──────────────────────────────────────────────────────────────┘        ║
+║                                                                              ║
+║  🔍 查询流程 (Query Process)                                                ║
+║     ┌──────────────────────────────────────────────────────────────┐        ║
+║     │  intent_route → metadata_filter → case_search                │        ║
+║     │                    → knowledge_search → merge_rerank         │        ║
+║     │                    → answer_output                           │        ║
+║     └──────────────────────────────────────────────────────────────┘        ║
+║                                                                              ║
+║  🏗️ 技术架构                                                                 ║
+║     • LangGraph: 流程编排框架                                               ║
+║     • FastAPI: Web 框架                                                     ║
+║     • Pydantic: 数据验证                                                    ║
+║     • Vector Store: 向量数据库                                              ║
+║     • LLM: 大语言模型                                                       ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                           模块职责说明                                        ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  📁 api/           - RESTful API 接口层，处理 HTTP 请求                       ║
+║  📁 core/          - 核心配置和依赖管理                                       ║
+║  📁 docs/          - 项目文档和开发记录                                       ║
+║  📁 processor/     - LangGraph 流程处理器                                    ║
+║  📁 schema/        - Pydantic 数据模型定义                                    ║
+║  📁 services/      - 业务逻辑服务层                                          ║
+║  📁 utils/         - 通用工具函数库                                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+生成时间: 2026-04-18
+项目状态: 🟢 活跃开发中
+当前版本: v0.2.0 (LangGraph 重构版)
