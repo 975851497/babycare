@@ -1,11 +1,14 @@
-"""文档解析（支持 MinerU）"""
-
+"""
+文档解析节点 - 支持 MinerU
+"""
 import os
 import subprocess
 from pathlib import Path
+from typing import Dict, Any
 
 
-def stream_mineru(cmd):
+def _stream_mineru(cmd):
+    """流式输出 MinerU 日志"""
     process = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -26,33 +29,47 @@ def stream_mineru(cmd):
     return return_code, logs
 
 
-def parse_document(state: dict) -> dict:
+def parse_document(state: Dict[str, Any]) -> Dict[str, Any]:
     """
-    输入:
-        state["file_path"]
+    文档解析节点
 
-    输出:
-        raw_text / status / error
+    Args:
+        state: 包含 file_path 的状态字典
+
+    Returns:
+        state update dict，包含 raw_text 和 status
     """
     file_path = state.get("file_path")
 
+    # 参数校验
     if not file_path:
-        return {"error": "file_path 为空", "status": "failed"}
+        return {
+            "status": "failed",
+            "error": "file_path 为空",
+            "current_step": "parse_document"
+        }
 
     if not isinstance(file_path, str):
-        return {"error": "file_path 必须是字符串", "status": "failed"}
+        return {
+            "status": "failed",
+            "error": "file_path 必须是字符串",
+            "current_step": "parse_document"
+        }
 
     if not os.path.exists(file_path):
-        return {"error": f"文件不存在: {file_path}", "status": "failed"}
+        return {
+            "status": "failed",
+            "error": f"文件不存在: {file_path}",
+            "current_step": "parse_document"
+        }
 
     try:
         file_path_obj = Path(file_path)
         ext = file_path_obj.suffix.lower()
 
-        # ===== PDF =====
+        # PDF 解析
         if ext == ".pdf":
             output_dir = file_path_obj.parent
-
             cmd = [
                 "mineru",
                 "-p",
@@ -64,24 +81,28 @@ def parse_document(state: dict) -> dict:
             ]
 
             print("\n===== 开始 MinerU 解析 =====\n")
-
-            code, logs = stream_mineru(cmd)
+            code, logs = _stream_mineru(cmd)
 
             if code != 0:
                 return {
                     "status": "failed",
-                    "error": "MinerU 解析失败"
+                    "error": "MinerU 解析失败",
+                    "current_step": "parse_document"
                 }
 
             file_name = file_path_obj.stem
             md_path = output_dir / file_name / "hybrid_auto" / f"{file_name}.md"
 
             if not md_path.exists():
-                return {"status": "failed", "error": "未找到 md 文件"}
+                return {
+                    "status": "failed",
+                    "error": "未找到 md 文件",
+                    "current_step": "parse_document"
+                }
 
             raw_text = md_path.read_text(encoding="utf-8", errors="ignore")
 
-        # ===== txt / md =====
+        # TXT/MD 解析
         elif ext in [".txt", ".md"]:
             try:
                 raw_text = file_path_obj.read_text(encoding="utf-8")
@@ -89,15 +110,28 @@ def parse_document(state: dict) -> dict:
                 raw_text = file_path_obj.read_text(encoding="gbk", errors="ignore")
 
         else:
-            return {"status": "failed", "error": f"不支持的格式: {ext}"}
+            return {
+                "status": "failed",
+                "error": f"不支持的格式: {ext}",
+                "current_step": "parse_document"
+            }
 
         if not raw_text.strip():
-            return {"status": "failed", "error": "文本为空"}
+            return {
+                "status": "failed",
+                "error": "文本为空",
+                "current_step": "parse_document"
+            }
 
         return {
             "raw_text": raw_text,
-            "status": "success"
+            "status": "success",
+            "current_step": "parse_document"
         }
 
     except Exception as e:
-        return {"status": "failed", "error": str(e)}
+        return {
+            "status": "failed",
+            "error": str(e),
+            "current_step": "parse_document"
+        }
