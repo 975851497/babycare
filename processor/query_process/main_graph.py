@@ -3,32 +3,8 @@
 from langgraph.graph import StateGraph, END
 
 from processor.query_process.state import QueryState
-
-
-async def knowledge_search(state: QueryState) -> QueryState:
-    """知识搜索节点：检索相关文档片段。
-
-    Args:
-        state: 当前状态
-
-    Returns:
-        更新后的状态
-    """
-    # TODO: 实现知识检索逻辑
-    pass
-
-
-async def answer_output(state: QueryState) -> QueryState:
-    """答案输出节点：基于检索结果生成回答。
-
-    Args:
-        state: 当前状态
-
-    Returns:
-        更新后的状态
-    """
-    # TODO: 实现答案生成逻辑
-    pass
+from processor.query_process.nodes.knowledge_search import knowledge_search
+from processor.query_process.nodes.answer_output import answer_output
 
 
 def build_query_graph() -> StateGraph:
