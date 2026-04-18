@@ -8,7 +8,7 @@ from pymilvus import MilvusClient, DataType
 
 from processor.import_process.base import BaseNode, setup_logging
 from processor.import_process.exceptions import StateFieldError, ValidationError, MilvusError
-from utils.storage_clients import StorageClients
+from utils.client.storage_clients import StorageClients
 
 
 @dataclass

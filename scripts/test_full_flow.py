@@ -13,7 +13,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from processor.import_process.main_graph import run_import_pipeline
-from processor.import_process.nodes.import_milvus import ImportMilvusNode
+from processor.import_process.nodes.import_milvus_extended import ImportMilvusNodeExtended
 from processor.import_process.base import setup_logging
 from processor.query_process.main_graph import run_query_pipeline
 
@@ -49,8 +49,8 @@ def test_import_flow() -> bool:
 
     print(f"📁 测试文件数量: {len(test_files)}")
 
-    # 创建 Milvus 导入节点
-    import_milvus_node = ImportMilvusNode()
+    # 创建扩展版 Milvus 导入节点
+    import_milvus_node = ImportMilvusNodeExtended()
 
     success_count = 0
     milvus_success_count = 0
@@ -76,7 +76,7 @@ def test_import_flow() -> bool:
                 print(f"   - 切分段数: {len(result.get('chunks', []))}")
                 print(f"   - 向量数量: {len(result.get('embeddings', []))}")
 
-                # 第二步：准备 Milvus 导入数据
+                # 第二步：准备 Milvus 导入数据（包含业务元数据）
                 chunks = result.get('chunks', [])
                 embeddings = result.get('embeddings', [])
 
@@ -84,40 +84,72 @@ def test_import_flow() -> bool:
                     print(f"⚠️  没有 chunks 或 embeddings，跳过 Milvus 导入")
                     continue
 
-                # 构建 Milvus 导入格式
-                milvus_data = []
-                for chunk, embedding in zip(chunks, embeddings):
-                    milvus_chunk = {
-                        "content": chunk,
-                        "title": file_path.stem,
-                        "parent_title": "沟通话术",
-                        "file_title": file_path.stem,
-                        "item_name": "babycare",
-                        "dense_vector": embedding,
-                        # 生成简单的稀疏向量（MVP 版本）
-                        "sparse_vector": {i: float(v) for i, v in enumerate(embedding) if v > 0.5}
-                    }
-                    milvus_data.append(milvus_chunk)
+                # 构建业务元数据（从文件名推断）
+                file_name = file_path.stem
 
-                # 第三步：调用 ImportMilvusNode 写入 Milvus
-                print(f"📥 正在写入 Milvus ({len(milvus_data)} 个 chunks)...")
-                state = {"chunks": milvus_data}
+                # 根据文件名推断业务元数据
+                content_type = "沟通话术"  # 默认值
+                if "专家建议" in str(file_path.parent):
+                    content_type = "专家建议"
+                elif "亲子案例" in str(file_path.parent):
+                    content_type = "亲子案例"
+                elif "知识科普" in str(file_path.parent):
+                    content_type = "知识科普"
+
+                # 推断年龄段（从文件名）
+                age_group = "通用"  # 默认值
+                if "0-3" in file_name or "婴儿" in file_name:
+                    age_group = "0-3岁"
+                elif "3-6" in file_name or "幼儿" in file_name:
+                    age_group = "3-6岁"
+                elif "6-12" in file_name or "学龄" in file_name:
+                    age_group = "6-12岁"
+
+                # 推断问题类型（从文件名）
+                issue_type = "通用"  # 默认值
+                if "挑食" in file_name or "餐桌" in file_name:
+                    issue_type = "健康饮食"
+                elif "冲突" in file_name or "打架" in file_name:
+                    issue_type = "行为引导"
+                elif "情绪" in file_name or "沟通" in file_name:
+                    issue_type = "情绪管理"
+
+                # 构建扩展版元数据
+                metadata = {
+                    "content_type": content_type,
+                    "author": "育儿专家",
+                    "age_group": age_group,
+                    "issue_type": issue_type,
+                    "source_file": file_path.name,
+                    "title": file_name
+                }
+
+                # 第三步：调用 ImportMilvusNodeExtended 写入 Milvus（扩展版Schema）
+                print(f"📥 正在写入 Milvus ({len(chunks)} 个 chunks)...")
+                print(f"   📋 元数据: {content_type} | {age_group} | {issue_type}")
+
+                # 构建状态（扩展版节点需要的格式）
+                state = {
+                    "chunks": chunks,
+                    "embeddings": embeddings,
+                    "metadata": metadata
+                }
 
                 try:
                     result_state = import_milvus_node.process(state)
                     milvus_success_count += 1
 
                     # 显示 Milvus 导入结果
+                    collection_name = result_state.get('collection_name', 'N/A')
                     print(f"✅ Milvus 写入成功")
-                    imported_chunks = result_state.get('chunks', [])
-                    print(f"   - 成功写入 {len(imported_chunks)} 个 chunks")
+                    print(f"   - 集合名称: {collection_name}")
+                    print(f"   - 成功写入 {len(result_state.get('chunks', []))} 个 chunks")
 
-                    # 显示前 3 个 chunk_id
-                    if imported_chunks:
-                        chunk_ids = [chunk.get('chunk_id', 'N/A') for chunk in imported_chunks[:3]]
-                        print(f"   - Chunk IDs: {chunk_ids}...")
-                        if len(imported_chunks) > 3:
-                            print(f"   - (还有 {len(imported_chunks) - 3} 个 chunks)")
+                    # 显示第一个 chunk 的详细信息
+                    if result_state.get('chunks'):
+                        first_chunk = result_state['chunks'][0]
+                        print(f"   - 首条元数据: {first_chunk.get('content_type')} | "
+                              f"{first_chunk.get('age_group')} | {first_chunk.get('issue_type')}")
 
                 except Exception as milvus_error:
                     print(f"❌ Milvus 写入失败: {str(milvus_error)}")

@@ -1,0 +1,48 @@
+# Babycare 育儿知识库项目依赖
+
+# === 核心框架 ===
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+
+# === 向量数据库 ===
+pymilvus>=2.3.0
+
+# === AI模型相关 ===
+# BGE-M3 嵌入模型 (用于混合向量检索)
+FlagEmbedding>=1.2.0
+# 适配 BGE-M3 的 baichuan-inc 包
+baichuan-inc>=1.0.0
+
+# === LLM 和 LangChain ===
+langchain-core>=0.1.0
+langchain>=0.1.0
+openai>=1.0.0  # OpenAI API 兼容接口
+
+# === 联网搜索 (MCP) ===
+# MCP 协议支持
+mcp>=0.9.0
+# HTTP 客户端 (用于 MCP 联网)
+httpx>=0.25.0
+# SSE 流式推送
+sse-starlette>=1.6.0
+starlette>=0.27.0
+fastapi>=0.104.0
+
+# === 文档处理 ===
+# MinerU (PDF 解析) - 如果需要
+# mineru>=0.4.0
+
+# === 其他工具 ===
+# 数据验证
+pydantic>=2.0.0
+# 日志
+loguru>=0.7.0
+# 异步支持
+asyncio>=3.4.3
+# 类型检查
+typing-extensions>=4.8.0
+
+# === 兼容性 ===
+# 确保与 Python 3.10+ 兼容
+python-version>=3.10

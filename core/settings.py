@@ -41,10 +41,19 @@ class Settings(BaseSettings):
 
     # Milvus
     milvus_url: str = Field("http://127.0.0.1:19530", alias="MILVUS_URL")
-    chunks_collection: str = Field("kb_chunks_v1", alias="CHUNKS_COLLECTION")
+    chunks_collection: str = Field("kb_chunks_v1_v2", alias="CHUNKS_COLLECTION")  # 更新为扩展版集合
     item_name_collection: str = Field("kb_item_names_v1", alias="ITEM_NAME_COLLECTION")
     milvus_metric_type: str = Field("COSINE", alias="MILVUS_METRIC_TYPE")
     milvus_min_cosine_score: float = Field(0.75, alias="MILVUS_MIN_COSINE_SCORE")
+
+    # RRF (Reciprocal Rank Fusion) 配置
+    rrf_k: int = Field(60, alias="RRF_K")  # RRF 平滑参数 (默认60)
+    rrf_max_results: int = Field(20, alias="RRF_MAX_RESULTS")  # RRF 最大结果数
+
+    # Reranker 配置
+    rerank_min_top_k: int = Field(3, alias="RERANK_MIN_TOP_K")  # 最少保留文档数 (断崖截断兜底)
+    rerank_max_top_k: int = Field(10, alias="RERANK_MAX_TOP_K")  # 最多保留文档数
+    rerank_gap_threshold: float = Field(0.15, alias="RERANK_GAP_THRESHOLD")  # 断崖阈值 (默认0.15)
 
     # MongoDB
     mongo_url: str = Field("mongodb://127.0.0.1:27017", alias="MONGO_URL")
