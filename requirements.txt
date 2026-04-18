@@ -1,9 +1,25 @@
-# 育儿知识库服务依赖（按需取消注释并固定版本）
-# fastapi
-# uvicorn[standard]
-# pydantic-settings
-# langgraph
-# pymilvus
-# motor / pymongo
-# httpx
-# python-multipart
+# API / 基础
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-multipart
+httpx
+
+# LLM / Agent / Workflow
+langchain-openai
+langgraph
+openai-agents
+openai
+
+# Embedding / Rerank
+sentence-transformers
+
+# Storage
+pymongo
+pymilvus
+minio
+
+# Graph / Parsing
+grandalf
+mineru[all]

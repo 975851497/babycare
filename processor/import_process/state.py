@@ -1,1 +1,10 @@
-"""导入流程状态类型（任务 ID、文件信息、中间结果、错误聚合）。"""
+from typing import List, TypedDict
+
+class ImportState(TypedDict, total=False):
+    file_path: str
+    raw_text: str
+    chunks: List[str]
+    embeddings: List[List[float]]
+    vector_ids: List[str]
+    status: str
+    error: str
