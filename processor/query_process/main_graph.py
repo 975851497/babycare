@@ -1,4 +1,5 @@
 """查询主流程图：意图路由 → 检索 → 融合排序 → 流式生成（可追溯引用）。"""
+import asyncio # 1. 在文件头引入 asyncio
 
 from langgraph.graph import StateGraph, END
 
@@ -30,7 +31,7 @@ def build_query_graph() -> StateGraph:
     return workflow.compile()
 
 
-def run_query_pipeline(question: str) -> QueryState:
+async def run_query_pipeline(question: str) -> QueryState:
     """运行查询流程。
 
     Args:
@@ -51,7 +52,7 @@ def run_query_pipeline(question: str) -> QueryState:
     graph = build_query_graph()
 
     try:
-        result = graph.invoke(initial_state)
+        result = await graph.ainvoke(initial_state)
 
         # 设置最终状态
         if result.get("status") != "failed":
@@ -70,7 +71,7 @@ if __name__ == "__main__":
     # 测试用例
     test_question = "宝宝挑食怎么办？"
 
-    result = run_query_pipeline(test_question)
+    result = asyncio.run(run_query_pipeline(test_question))
 
     print("\n===== 执行结果 =====")
     print(f"问题: {result.get('question')}")

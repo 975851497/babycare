@@ -3,6 +3,8 @@
 """
 from typing import Dict, Any, List
 
+from utils.embedding_utils import get_embedding
+
 
 def generate_embedding(state: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -24,34 +26,26 @@ def generate_embedding(state: Dict[str, Any]) -> Dict[str, Any]:
             "current_step": "generate_embedding"
         }
 
-    embeddings = []
+    try:
+        # 使用统一的 embedding 工具函数
+        embeddings = [get_embedding(chunk) for chunk in chunks]
 
-    # MVP: 简单的模拟向量生成
-    for chunk in chunks:
-        vector = []
-        text = chunk.strip()
+        if not embeddings:
+            return {
+                "status": "failed",
+                "error": "生成的 embeddings 为空",
+                "current_step": "generate_embedding"
+            }
 
-        # 防止空字符串
-        if not text:
-            text = " "
-
-        # 生成固定 10 维向量（MVP 版本）
-        for i in range(10):
-            idx = i % len(text)
-            val = (ord(text[idx]) + i) % 256
-            vector.append(val / 255.0)
-
-        embeddings.append(vector)
-
-    if not embeddings:
         return {
-            "status": "failed",
-            "error": "生成的 embeddings 为空",
+            "embeddings": embeddings,
+            "status": "success",
             "current_step": "generate_embedding"
         }
 
-    return {
-        "embeddings": embeddings,
-        "status": "success",
-        "current_step": "generate_embedding"
-    }
+    except Exception as e:
+        return {
+            "status": "failed",
+            "error": f"生成向量时发生异常: {str(e)}",
+            "current_step": "generate_embedding"
+        }

@@ -4,9 +4,7 @@
 from typing import Dict, Any, List
 import uuid
 
-
-# 模拟内存向量库（全局变量）
-VECTOR_STORE = {}
+from utils.vector_store import vector_store
 
 
 def vector_upsert(state: Dict[str, Any]) -> Dict[str, Any]:
@@ -32,15 +30,15 @@ def vector_upsert(state: Dict[str, Any]) -> Dict[str, Any]:
 
     vector_ids = []
 
-    # 存储到向量库
+    # 存储到全局向量库单例
     for i, emb in enumerate(embeddings):
         vector_id = str(uuid.uuid4())
 
-        # 存入"假向量库"
-        VECTOR_STORE[vector_id] = {
-            "embedding": emb,
-            "text": chunks[i] if i < len(chunks) else ""
-        }
+        # 获取对应的文本
+        text = chunks[i] if i < len(chunks) else ""
+
+        # 存入全局向量库
+        vector_store.add_vector(vector_id, text, emb)
 
         vector_ids.append(vector_id)
 
